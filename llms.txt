@@ -1,0 +1,8 @@
+# JP Kansuji Guard
+
+> Converts kanji numerals in Japanese text to digits only where they are clearly numbers (三億五千万円 -> 350000000円, 第三条 -> 第3条), and keeps names, places, companies, words and idioms (一宮市, 五十嵐, 三菱, 統一, 一石二鳥). Reading-dependent spans (十分, 一時, 一番, 二三人) and approximate amounts (数万円) are kept and flagged. Python stdlib, no network, MIT. MCP server and a 126-case bench included.
+
+- kansujiguard/guard.py: convert(text) -> {text, changes, kept, flags}; parse_number(s) -> int | None
+- kansujiguard/server.py: MCP stdio server with tools jp_kansuji_convert and jp_kansuji_parse
+- kansujiguard/bench.py, data/kansuji_guard_bench_v1.jsonl: bench (exact match), score any str -> str function
+- tests/test_kansujiguard.py: 13 tests
