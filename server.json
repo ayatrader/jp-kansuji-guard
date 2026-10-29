@@ -1,0 +1,22 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.ayatrader/jp-kansuji-guard",
+  "title": "JP Kansuji Guard",
+  "description": "Convert Japanese kanji numerals to digits without breaking names, places or idioms.",
+  "repository": {
+    "url": "https://github.com/ayatrader/jp-kansuji-guard",
+    "source": "github"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "jp-kansuji-guard",
+      "version": "0.1.0",
+      "runtimeHint": "uvx",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}
