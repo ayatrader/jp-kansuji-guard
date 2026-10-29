@@ -1,0 +1,2 @@
+[console_scripts]
+jp-kansuji-guard = kansujiguard.server:main
