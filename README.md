@@ -1,5 +1,7 @@
 # JP Kansuji Guard
 
+<!-- mcp-name: io.github.ayatrader/jp-kansuji-guard -->
+
 **Turn kanji numerals in Japanese text into digits (`三億五千万円` → `350000000円`) without breaking names, places and idioms (`一宮市`, `五十嵐`, `三菱`, `一石二鳥` stay as they are).**
 
 A numeral normalizer that converts every kanji numeral also converts the ones inside proper nouns and words: `一宮市` becomes `1宮市`, `統一` becomes `統1`. Search indexes, RAG chunks and extracted fields then carry the damage. One normalizer's own documentation warns that a name like 加藤一二三 can be misconverted ([jpnorm](https://pypi.org/project/jpnorm/)).
