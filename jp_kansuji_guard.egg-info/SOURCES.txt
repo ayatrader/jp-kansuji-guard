@@ -1,0 +1,15 @@
+LICENSE
+README.md
+pyproject.toml
+jp_kansuji_guard.egg-info/PKG-INFO
+jp_kansuji_guard.egg-info/SOURCES.txt
+jp_kansuji_guard.egg-info/dependency_links.txt
+jp_kansuji_guard.egg-info/entry_points.txt
+jp_kansuji_guard.egg-info/top_level.txt
+kansujiguard/__init__.py
+kansujiguard/__main__.py
+kansujiguard/bench.py
+kansujiguard/cases.py
+kansujiguard/guard.py
+kansujiguard/server.py
+tests/test_kansujiguard.py
