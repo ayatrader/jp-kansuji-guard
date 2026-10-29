@@ -1,0 +1,97 @@
+Metadata-Version: 2.4
+Name: jp-kansuji-guard
+Version: 0.1.0
+Summary: Convert Japanese kanji numerals to digits without breaking names, places or idioms.
+Author: NEXUS tools
+License: MIT
+Project-URL: Homepage, https://github.com/ayatrader/jp-kansuji-guard
+Project-URL: Source, https://github.com/ayatrader/jp-kansuji-guard
+Keywords: mcp,mcp-server,japanese,ai-agents
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Natural Language :: Japanese
+Classifier: Topic :: Text Processing :: Linguistic
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Dynamic: license-file
+
+# JP Kansuji Guard
+
+<!-- mcp-name: io.github.ayatrader/jp-kansuji-guard -->
+
+**Turn kanji numerals in Japanese text into digits (`三億五千万円` → `350000000円`) without breaking names, places and idioms (`一宮市`, `五十嵐`, `三菱`, `一石二鳥` stay as they are).**
+
+A numeral normalizer that converts every kanji numeral also converts the ones inside proper nouns and words: `一宮市` becomes `1宮市`, `統一` becomes `統1`. Search indexes, RAG chunks and extracted fields then carry the damage. One normalizer's own documentation warns that a name like 加藤一二三 can be misconverted ([jpnorm](https://pypi.org/project/jpnorm/)).
+
+This package converts a numeral only where the text says it is a number:
+
+- it is followed by a unit or counter (`円`, `人`, `年`, `条`, `階`, `%`, …), or it is a `万/億/兆` amount
+- it is not part of a known name, place, company, word or idiom (252 entries, hand-written)
+- if the meaning depends on the reading (`十分` = "enough" or "10 minutes", `一時`, `一番`, `二三人` = "2 or 3 people") or the amount is approximate (`数万円`), the text is kept and the span is returned in `flags`
+
+It also reads formal numerals (`金壱萬円也` → `金10000円也`) and mixed forms (`1億2,300万円` → `123000000円`).
+
+Python standard library only. No network. MIT.
+
+## Bench
+
+`data/kansuji_guard_bench_v1.jsonl` has 126 cases: 48 to convert, 69 to keep (places, names, companies, words, idioms) and 9 ambiguous spans to leave alone. Scoring is exact match of the whole output.
+
+| Converter | Score | Convert | Keep | Ambiguous |
+|---|---|---|---|---|
+| naive baseline in this repo (convert every numeral) | 47/126 (37.3%) | 44/48 | 2/69 | 1/9 |
+| kansujiguard 0.1.0 | 126/126 (100%) | 48/48 | 69/69 | 9/9 |
+
+Read the second row with care: the rules and the cases were written together, so 100% here says the rules match this bench, not that they are complete. New failing cases are the most useful contribution (open an issue with the sentence and the output you expected).
+
+Score your own converter (a function `str -> str`):
+
+```bash
+python -m kansujiguard.bench --module yourpkg.yourmodule:convert
+```
+
+## Use
+
+```bash
+python -m kansujiguard notes.txt          # converted text to stdout, flags to stderr
+python -m kansujiguard notes.txt --json   # {"text", "changes", "kept", "flags"}
+```
+
+```python
+from kansujiguard import convert, parse_number
+convert("三菱の売上は三億円、十分な利益")["text"]
+# '三菱の売上は300000000円、十分な利益'   (十分 is flagged, not converted)
+parse_number("1億2,300万")
+# 123000000
+```
+
+### As an MCP server (for AI agents)
+
+```json
+{"mcpServers": {"jp-kansuji-guard": {"command": "python", "args": ["-m", "kansujiguard.server"], "cwd": "/path/to/jp-kansuji-guard"}}}
+```
+
+| Tool | Input | Returns |
+|---|---|---|
+| `jp_kansuji_convert` | `text` | `text`, `changes` (start/end/before/after/value/reason), `kept`, `flags` |
+| `jp_kansuji_parse` | `numeral` | `value` (int) or `null` with `error` |
+
+Both tools are read-only.
+
+## Limits
+
+- The word list is hand-written. Names and places not on it can still be converted when a counter follows them
+- Decimals (`三・五`, `三点五`) and ranges (`三〜五人`) are not converted
+- Output digits have no thousands separators
+- Tests: `python -m unittest discover -s tests` (13 tests)
+
+---
+
+## 日本語
+
+文中の漢数字を数字に直します。ただし、単位・助数詞が続くときや 万/億/兆 の金額など、数だと分かる所だけ。地名・人名・社名・熟語(一宮市・五十嵐・三菱・統一・一石二鳥)は直しません。読み方で意味が変わるもの(十分・一時・一番・二三人)やおおよその数(数万円)は直さずに `flags` で知らせます。
+
+- 大字(壱・弐・参・拾・萬)、全角数字、`1億2,300万` のような混ざった書き方にも対応
+- 判定テスト集126問つき。自分の変換関数も採点できます
+- 外部通信なし・Python標準ライブラリのみ・MIT。AIエージェントからは MCP サーバー(`python -m kansujiguard.server`)で使えます
